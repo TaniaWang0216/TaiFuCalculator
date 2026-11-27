@@ -10,7 +10,7 @@
   .wrap{max-width:900px;margin:auto}.hero{background:linear-gradient(125deg,var(--navy),#245c70);color:white;border-radius:22px;padding:28px 30px;margin-bottom:20px;box-shadow:0 12px 30px #17324d22}
   .hero h1{font-size:clamp(22px,4vw,30px);margin:0 0 8px}.hero p{margin:0;color:#d9e8ef;font-size:14px}
   .card{background:white;border-radius:20px;padding:25px;margin:16px 0;box-shadow:0 8px 24px #19384a0c;border:1px solid #e8eef0}
-  h2{font-size:18px;margin:0 0 18px;color:var(--navy)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.field label{display:block;font-weight:650;margin-bottom:8px}.field input{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:12px;font-size:17px;outline:none}.field input:focus{border-color:var(--teal);box-shadow:0 0 0 3px #167c8018}
+  h2{font-size:18px;margin:0 0 18px;color:var(--navy)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.field label{display:block;font-weight:650;margin-bottom:8px}.field input{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:12px;font-size:17px;outline:none}.field input:focus{border-color:var(--teal);box-shadow:0 0 0 3px #167c8018}.input-unit{position:relative}.input-unit input{padding-right:48px}.input-unit span{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--muted);pointer-events:none}
   .hint{font-size:12px;color:var(--muted);margin-top:6px}.radio-row{display:flex;gap:12px;flex-wrap:wrap}.radio-card{flex:1;min-width:140px;position:relative}.radio-card input{position:absolute;opacity:0}.radio-card label{display:block;border:1.5px solid var(--line);border-radius:14px;padding:16px;text-align:center;cursor:pointer;font-weight:700}.radio-card input:checked+label{border-color:var(--teal);background:#eaf7f6;color:#12696d;box-shadow:0 0 0 2px #167c8010}.radio-card label span{display:block;font-size:13px;font-weight:400;margin-top:4px}
   button{border:0;border-radius:13px;background:var(--teal);color:white;font-size:16px;font-weight:700;padding:14px 20px;cursor:pointer;width:100%;margin-top:20px}button:hover{filter:brightness(.95)}.error{color:#b42318;font-size:14px;margin-top:12px;display:none}
   .results{display:grid;grid-template-columns:1fr 1fr;gap:16px}.result{border-radius:16px;padding:20px;background:#f3f8f8;border:1px solid #dceeee}.result.month48{background:#fbf7ef;border-color:#eee2c8}.result h3{margin:0 0 12px;font-size:17px}.result .sub{font-size:12px;color:var(--muted);margin-bottom:12px}.rowline{display:flex;justify-content:space-between;gap:12px;margin:9px 0;font-size:14px}.rowline strong{text-align:right}.amount{font-size:25px;font-weight:800;color:var(--teal);margin-top:8px}.month48 .amount{color:#986b24}.label-pill{display:inline-block;border-radius:100px;background:#e2f1f1;color:#11696d;padding:4px 10px;font-size:12px;margin-bottom:10px}.month48 .label-pill{background:#f3e8d5;color:#86611f}
@@ -24,8 +24,8 @@
   <section class="card">
     <h2>試算條件</h2>
     <div class="grid">
-      <div class="field"><label for="investment">投入金額（新台幣）</label><input id="investment" type="number" min="300000" step="10000" placeholder="最低 300,000 元"><div class="hint">投入金額不得低於 300,000 元</div></div>
-      <div class="field"><label for="nav">基金／標的淨值</label><input id="nav" type="number" min="9" step="0.01" placeholder="請輸入淨值"><div class="hint">請輸入計算使用的淨值</div></div>
+      <div class="field"><label for="investment">投入金額（新台幣）</label><div class="input-unit"><input id="investment" type="number" min="30" step="1" value="100" placeholder="最低 30"><span>萬</span></div><div class="hint">輸入單位為萬元，最低 30 萬元（輸入 30 即為 300,000 元）</div></div>
+      <div class="field"><label for="nav">淨值</label><input id="nav" type="number" min="0.01" step="0.01" value="10" placeholder="請輸入淨值"><div class="hint">請輸入計算使用的淨值</div></div>
     </div>
     <div style="margin-top:22px"><label style="display:block;font-weight:650;margin-bottom:10px">選擇標的</label>
       <div class="radio-row">
@@ -43,11 +43,11 @@ const FIXED = 0.04167;
 const rates = {1:0.0011,48:0.0324};
 function money(n){return n.toLocaleString('zh-TW',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function calculate(){
- const invest=Number(document.getElementById('investment').value), nav=Number(document.getElementById('nav').value);
+ const invest=Number(document.getElementById('investment').value)*10000, nav=Number(document.getElementById('nav').value);
  const target=document.querySelector('input[name="target"]:checked').value;
  const err=document.getElementById('error'),out=document.getElementById('output');
  err.style.display='none';out.classList.add('hidden');
- if(!invest||invest<300000){err.textContent='投入金額需至少 300,000 元。';err.style.display='block';return;}
+ if(!invest||invest<300000){err.textContent='投入金額需至少 30 萬元（輸入 30）。';err.style.display='block';return;}
  if(!nav||nav<=0){err.textContent='請輸入大於 0 的淨值。';err.style.display='block';return;}
  const extra=target==='asia'?0.04167:0.1;
  const targetName=target==='asia'?'亞太三盈':'MIT';
@@ -57,8 +57,6 @@ function calculate(){
    return `<div class="result ${month===48?'month48':''}">
      <span class="label-pill">第 ${month} 個月</span><h3>${month===1?'首月配息試算':'第 48 個月配息試算'}</h3>
      <div class="sub">累積手續費率：${(rate*100).toFixed(2)}%｜標的：${targetName}</div>
-     <div class="rowline"><span>手續費</span><strong>${money(fee)} 元</strong></div>
-     <div class="rowline"><span>扣費後金額</span><strong>${money(invest-fee)} 元</strong></div>
      <div class="rowline"><span>取得單位數</span><strong>${units.toLocaleString('zh-TW',{minimumFractionDigits:4,maximumFractionDigits:4})}</strong></div>
      <div class="rowline"><span>標的加發配息 <small style="color:var(--muted)">(${target==='asia'?'淨值 ≥ 10.2 時加發':'淨值 > 10.3 時加發'})</small></span><strong>${money(additional)} 元</strong></div>
      <div style="margin-top:16px;padding:14px;background:#fff;border:1px solid var(--line);border-radius:12px"><div class="sub" style="margin-bottom:5px">① 固定配息</div><div class="amount" style="margin-top:0">${money(fixed)} 元</div></div>
